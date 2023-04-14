@@ -5,6 +5,11 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildUtility", "BuildUtility\BuildUtility.csproj", "{8C1788FF-A7F6-42DC-BD67-37ADB4CC9312}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{1EBDCAF1-E7D4-4D36-8C80-462737481C6B}"
+	ProjectSection(SolutionItems) = preProject
+		Утилита сборки make.pdf = Утилита сборки make.pdf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
