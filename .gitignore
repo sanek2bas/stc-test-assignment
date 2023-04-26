@@ -6,3 +6,5 @@
 /.vs/BuildUtility
 /BuildUtility/bin/Debug/net7.0
 /.vs/ProjectEvaluation
+/BuildUtility.UnitTests/bin/Debug/net7.0
+/BuildUtility.UnitTests/obj
