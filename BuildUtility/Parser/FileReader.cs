@@ -2,28 +2,29 @@
 {
     public sealed class FileReader
     {
-        private StreamReader? _streamReader;
+        private StreamReader? streamReader;
 
         public void Start(string fileName)
         {
             Stop();
-            _streamReader = new StreamReader(fileName);
+            streamReader = new StreamReader(fileName);
         }
 
         public void Stop()
         {
-            if (_streamReader == null)
+            if (streamReader == null)
                 return;
-            _streamReader.Dispose();
-            _streamReader.Close();
-            _streamReader = null;
+            streamReader.Dispose();
+            streamReader.Close();
+            streamReader = null;
         }
 
         public string? ReadLine()
         {
-            if (_streamReader == null || _streamReader.EndOfStream)
+            if (streamReader == null || 
+                streamReader.EndOfStream)
                 return null;
-            return _streamReader.ReadLine();
+            return streamReader.ReadLine();
         }
     }
 }
