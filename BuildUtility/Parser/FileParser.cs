@@ -1,4 +1,5 @@
 ﻿using BuildUtility.Entity;
+using BuildUtility.Exceptions;
 using BuildUtility.Extensions;
 
 namespace BuildUtility.Parser
@@ -6,55 +7,62 @@ namespace BuildUtility.Parser
     public sealed class FileParser : IFileParser<Build>
     {
         private const char colon = ':';
-        private readonly FileReader _fileReader;
-        private string? _readedLine;
+        private readonly FileReader fileReader;
+        private string? readedLine;
+        private int linesCount;
 
         public FileParser()
         {
-            _fileReader = new FileReader();
+            fileReader = new FileReader();
         }
 
         public IEnumerable<Build> Parse(string fileName)
         {
-            _fileReader.Start(fileName);
-
+            fileReader.Start(fileName);
             Build? nextItem;
             while ((nextItem = tryGetNextItem()) != null)
                 yield return nextItem;
+            Close();
+        }
 
-            _fileReader.Stop();
+        public void Close()
+        {
+            fileReader.Stop();
+            linesCount = 0;
         }
 
         private Build? tryGetNextItem()
         {
-            if (string.IsNullOrEmpty(_readedLine))
+            linesCount++;
+            if (string.IsNullOrEmpty(readedLine))
             {
-                _readedLine = _fileReader.ReadLine();
-                if (string.IsNullOrEmpty(_readedLine))
+                readedLine = fileReader.ReadLine();
+                if (string.IsNullOrEmpty(readedLine))
                     return null;
             }
 
-            if (lineContainsTabOrSpaceInFirstChar(_readedLine))
-                throw new Exception();
+            if (lineContainsTabOrSpaceInFirstChar(readedLine))
+                throw new InvalidFileDataException($"Line contains tab or space in first char: {linesCount} line");
 
-            var parsedLineWithBuildName = parseLineWithBuildName(_readedLine);
+            var parsedLineWithBuildName = parseLineWithBuildName(readedLine);
 
             var build = new Build(parsedLineWithBuildName.BuildName);
             foreach (var dependencyBuildName in parsedLineWithBuildName.DependencyBuildNames)
                 build.Dependencies.Add(dependencyBuildName);
 
-            while ((_readedLine = _fileReader.ReadLine()) != null)
+            while ((readedLine = fileReader.ReadLine()) != null)
             {
-                if (!lineContainsTabOrSpaceInFirstChar(_readedLine))
+                if (string.IsNullOrEmpty(readedLine) || string.IsNullOrWhiteSpace(readedLine))
+                    throw new InvalidFileDataException($"File contains empty line: {linesCount} line");
+                if (!lineContainsTabOrSpaceInFirstChar(readedLine))
                     break;
-                if (!lineContainsOnlyOneWord(_readedLine, out var action))
-                    throw new Exception();
+                if (!lineContainsOnlyOneWord(readedLine, out var action))
+                    throw new InvalidFileDataException($"Build hasn't contain action(s): {linesCount} line");
                 build.Actions.Add(action);
             }
 
             return build;
         }
-
 
         private bool lineContainsTabOrSpaceInFirstChar(string line)
         {
@@ -63,14 +71,16 @@ namespace BuildUtility.Parser
 
         private (string BuildName, List<string> DependencyBuildNames) parseLineWithBuildName(string line)
         {
-            var splitedLine = line.Split();
+            var splitedLine = line.Split()
+                                  .Where(s => !string.IsNullOrEmpty(s))
+                                  .ToArray();
             var buildName = splitedLine[0];
             var isColonBuildNameLastChar = buildName.Last() == colon;
 
             if (string.IsNullOrEmpty(buildName) ||
                 splitedLine.Length == 1 && isColonBuildNameLastChar ||
                 splitedLine.Length > 1 && !isColonBuildNameLastChar)
-                throw new Exception();
+                throw new InvalidFileDataException($"Invalid line with build's name: {linesCount} line");
 
             if (isColonBuildNameLastChar)
                 buildName = buildName.RemoveLastChar();

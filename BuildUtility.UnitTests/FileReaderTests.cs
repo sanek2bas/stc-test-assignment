@@ -9,6 +9,7 @@ namespace BuildUtility.UnitTests
         private readonly string fileName = "text.txt";
         private FileReader fileReader;
 
+
         [SetUp]
         public void Setup()
         {
@@ -54,7 +55,6 @@ namespace BuildUtility.UnitTests
             Assert.That(resultList, Is.EqualTo(data));
         }
 
-        #region Private Methods
 
         private void createFile()
         {
@@ -80,7 +80,5 @@ namespace BuildUtility.UnitTests
             }
             return data;
         }
-
-        #endregion
     }
 }
